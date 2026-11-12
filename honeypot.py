@@ -5,9 +5,9 @@ import urllib.request
 import json
 
 # ================= CONFIGURAÇÕES DE ALERTAS =================
-DISCORD_URL = https://discord.com/api/webhooks/1570242193363308700/LpCXHXuWmsjalu5BgWJmYC6z0VpkAL5aNKeJh3zHW2QBpXmn5awhvtMzhqkShrlEweQ5
-TELEGRAM_TOKEN = 9252839116:AAGAn0BCS6gy6on7rAfpZaJ1eDEakFVjWuk
-TELEGRAM_CHAT = 9252839116
+DISCORD_URL = "https://discord.com/api/webhooks/1570242193363308700/LpCXHXuWmsjalu5BgWJmYC6z0VpkAL5aNKeJh3zHW2QBpXmn5awhvtMzhqkShrlEweQ5"
+TELEGRAM_TOKEN = "9252839116:AAGAn0BCS6gy6on7rAfpZaJ1eDEakFVjWuk"
+TELEGRAM_CHAT = "9252839116"
 
 def disparar_alertas(ip_atacante):
     mensagem_discord = f"🚨 **ALERTA DE INTRUSÃO (HONEYPOT)** 🚨\nVarrimento detetado na Porta 22!\n**IP do Atacante:** `{ip_atacante}`"
