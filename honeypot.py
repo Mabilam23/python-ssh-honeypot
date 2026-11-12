@@ -18,9 +18,11 @@ def disparar_alertas(ip_atacante):
         if "COLE_AQUI" not in DISCORD_URL:
             req_disc = urllib.request.Request(DISCORD_URL, method="POST")
             req_disc.add_header('Content-Type', 'application/json')
-            urllib.request.urlopen(req_disc, data=json.dumps({"content": mensagem_discord}).encode('utf-8'), timeout=3)
-    except Exception:
-        pass # Ignora erros de envio para não travar o honeypot
+            req_disc.add_header('User-Agent', 'Mozilla/5.0') # Mascara para evitar bloqueio do Discord
+            urllib.request.urlopen(req_disc, data=json.dumps({"content": mensagem_discord}).encode('utf-8'), timeout=5)
+            print("[+] Alerta Discord enviado com sucesso!")
+    except Exception as e:
+        print(f"[-] Falha ao enviar para Discord: {e}")
 
     # Envio para o Telegram
     try:
@@ -28,9 +30,11 @@ def disparar_alertas(ip_atacante):
             url_tele = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
             req_tele = urllib.request.Request(url_tele, method="POST")
             req_tele.add_header('Content-Type', 'application/json')
-            urllib.request.urlopen(req_tele, data=json.dumps({"chat_id": TELEGRAM_CHAT, "text": mensagem_telegram}).encode('utf-8'), timeout=3)
-    except Exception:
-        pass # Ignora erros de envio para não travar o honeypot
+            req_tele.add_header('User-Agent', 'Mozilla/5.0')
+            urllib.request.urlopen(req_tele, data=json.dumps({"chat_id": TELEGRAM_CHAT, "text": mensagem_telegram}).encode('utf-8'), timeout=5)
+            print("[+] Alerta Telegram enviado com sucesso!")
+    except Exception as e:
+        print(f"[-] Falha ao enviar para Telegram: {e}")
 
 # ================= MOTOR DO HONEYPOT =================
 def iniciar_honeypot():
@@ -58,21 +62,17 @@ def iniciar_honeypot():
             mensagem_log = f"[{data_hora}] [!] Ligacao bloqueada do IP: {ip_atacante}"
             print(mensagem_log)
             
-            # Registar no ficheiro de logs
             with open("/home/mabila-honeypot/intrusoes.log", "a") as f:
                 f.write(mensagem_log + "\n")
             
-            # Disparar alertas em tempo real
             disparar_alertas(ip_atacante)
             
-            # Enganar o atacante com o banner falso
-            time.sleep(1) # Pausa para simular processamento real de SSH
+            time.sleep(1) 
             cliente.send(banner_falso)
             cliente.close()
             
-        except Exception:
-            # Blindagem contra erros agressivos do Nmap (ex: Connection reset by peer)
-            pass
+        except Exception as e:
+            print(f"[-] Erro na ligacao com o cliente: {e}")
 
 if __name__ == "__main__":
     iniciar_honeypot()
