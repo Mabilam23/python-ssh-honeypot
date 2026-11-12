@@ -11,7 +11,7 @@ O motor base está totalmente funcional. O honeypot é capaz de escutar tráfego
 - [x] Testes de eficácia comprovados via localhost e ataques de rede externa.
 
 ### Fase 2: Automação e Expansão
-- [] **Persistência:** Transformar o script num serviço do sistema Linux para arranque automático e invisível.
+- [X] **Persistência:** Transformar o script num serviço do sistema Linux para arranque automático e invisível.
 - [ ] **Expansão Multi-Porta:** Adicionar monitorização simultânea para as portas 21 (FTP) e 80 (HTTP).
 - [ ] **Alertas em Tempo Real:** Integração de Webhooks para notificar ataques instantaneamente via Discord ou Telegram.
 - [ ] **Defesa Ativa:** Integração com a Firewall para banir os IPs detetados automaticamente.
