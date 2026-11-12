@@ -1,6 +1,0 @@
-
-
-
-
-Criação e ativação do ficheiro honeypot.service no Ubuntu. Este passo transforma o script Python num serviço nativo do Linux (daemon),
-garantindo que corre invisível em segundo plano, arranca sozinho sempre que a máquina é ligada e reinicia automaticamente em caso de falha.
