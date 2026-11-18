@@ -3,38 +3,32 @@ import time
 from datetime import datetime
 import urllib.request
 import json
+import subprocess # NOVO: Módulo para enviar comandos para o terminal do Linux
 
 # ================= CONFIGURAÇÕES DE ALERTAS =================
 DISCORD_URL = "https://discord.com/api/webhooks/1570242193363308700/LpCXHXuWmsjalu5BgWJmYC6z0VpkAL5aNKeJh3zHW2QBpXmn5awhvtMzhqkShrlEweQ5"
-TELEGRAM_TOKEN = "9252839116:AAGAn0BCS6gy6on7rAfpZaJ1eDEakFVjWuk"
-TELEGRAM_CHAT = "9252839116"
 
 def disparar_alertas(ip_atacante):
-    mensagem_discord = f"🚨 **ALERTA DE INTRUSÃO (HONEYPOT)** 🚨\nVarrimento detetado na Porta 22!\n**IP do Atacante:** `{ip_atacante}`"
-    mensagem_telegram = f"🚨 ALERTA DE INTRUSÃO (HONEYPOT) 🚨\nVarrimento detetado na Porta 22!\nIP do Atacante: {ip_atacante}"
+    mensagem_discord = f"🚨 **ALERTA DE INTRUSÃO (HONEYPOT)** 🚨\nVarrimento detetado na Porta 22!\n**IP do Atacante:** `{ip_atacante}`\n🛡️ **Ação da Máquina:** IP banido permanentemente na Firewall!"
     
-    # Envio para o Discord
     try:
         if "COLE_AQUI" not in DISCORD_URL:
             req_disc = urllib.request.Request(DISCORD_URL, method="POST")
             req_disc.add_header('Content-Type', 'application/json')
-            req_disc.add_header('User-Agent', 'Mozilla/5.0') # Mascara para evitar bloqueio do Discord
+            req_disc.add_header('User-Agent', 'Mozilla/5.0')
             urllib.request.urlopen(req_disc, data=json.dumps({"content": mensagem_discord}).encode('utf-8'), timeout=5)
             print("[+] Alerta Discord enviado com sucesso!")
     except Exception as e:
         print(f"[-] Falha ao enviar para Discord: {e}")
 
-    # Envio para o Telegram
+# ================= DEFESA ATIVA (FIREWALL) =================
+def banir_ip(ip_atacante):
     try:
-        if "COLE_AQUI" not in TELEGRAM_TOKEN:
-            url_tele = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-            req_tele = urllib.request.Request(url_tele, method="POST")
-            req_tele.add_header('Content-Type', 'application/json')
-            req_tele.add_header('User-Agent', 'Mozilla/5.0')
-            urllib.request.urlopen(req_tele, data=json.dumps({"chat_id": TELEGRAM_CHAT, "text": mensagem_telegram}).encode('utf-8'), timeout=5)
-            print("[+] Alerta Telegram enviado com sucesso!")
+        # Comando Iptables: Adiciona (-A) à entrada (INPUT) do IP de origem (-s) a ação de bloquear (-j DROP)
+        subprocess.run(["iptables", "-A", "INPUT", "-s", ip_atacante, "-j", "DROP"], check=True)
+        print(f"[🛡️] Defesa Ativa: IP {ip_atacante} bloqueado com sucesso pelo Iptables!")
     except Exception as e:
-        print(f"[-] Falha ao enviar para Telegram: {e}")
+        print(f"[-] Falha ao banir IP na firewall: {e}")
 
 # ================= MOTOR DO HONEYPOT =================
 def iniciar_honeypot():
@@ -65,14 +59,16 @@ def iniciar_honeypot():
             with open("/home/mabila-honeypot/intrusoes.log", "a") as f:
                 f.write(mensagem_log + "\n")
             
+            # Disparar Alerta e de seguida Banir o IP
             disparar_alertas(ip_atacante)
+            banir_ip(ip_atacante)
             
             time.sleep(1) 
             cliente.send(banner_falso)
             cliente.close()
             
         except Exception as e:
-            print(f"[-] Erro na ligacao com o cliente: {e}")
+            pass
 
 if __name__ == "__main__":
     iniciar_honeypot()
