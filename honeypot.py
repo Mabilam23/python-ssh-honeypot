@@ -6,8 +6,7 @@ import json
 import subprocess # NOVO: Módulo para enviar comandos para o terminal do Linux
 
 # ================= CONFIGURAÇÕES DE ALERTAS =================
-DISCORD_URL = "https://discord.com/api/webhooks/1570242193363308700/LpCXHXuWmsjalu5BgWJmYC6z0VpkAL5aNKeJh3zHW2QBpXmn5awhvtMzhqkShrlEweQ5"
-
+DISCORD_URL = "Discord URL."
 def disparar_alertas(ip_atacante):
     mensagem_discord = f"🚨 **ALERTA DE INTRUSÃO (HONEYPOT)** 🚨\nVarrimento detetado na Porta 22!\n**IP do Atacante:** `{ip_atacante}`\n🛡️ **Ação da Máquina:** IP banido permanentemente na Firewall!"
     
