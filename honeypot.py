@@ -8,7 +8,7 @@ import subprocess
 import threading # NOVO: Permite correr várias portas ao mesmo tempo
 
 # ================= CONFIGURAÇÕES DE ALERTAS =================
-DISCORD_URL = "https://discord.com/api/webhooks/1570242193363308700/LpCXHXuWmsjalu5BgWJmYC6z0VpkAL5aNKeJh3zHW2QBpXmn5awhvtMzhqkShrlEweQ5"
+DISCORD_URL = "DISCORD URL"
 
 def disparar_alertas(ip_atacante, porta, servico):
     mensagem_discord = f"🚨 **ALERTA DE INTRUSÃO (HONEYPOT)** 🚨\nVarrimento detetado!\n**Alvo:** Porta {porta} ({servico})\n**IP do Atacante:** `{ip_atacante}`\n🛡️ **Ação da Máquina:** IP banido permanentemente na Firewall!"
