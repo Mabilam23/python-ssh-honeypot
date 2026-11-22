@@ -43,6 +43,6 @@ Para simular a Defesa Ativa, deve-se utilizar a máquina Kali Linux:
 3. **Ataque de Força Bruta:** `hydra -l admin -p 123456 ftp://[IP_DO_UBUNTU]`
    * *Resultado:* O Hydra não consegue iniciar o ataque porque a ligação é terminada imediatamente pela firewall.
 
-## 🏁 Conclusão
+## Conclusão
 O projeto demonstrou com sucesso que a transição de uma postura de cibersegurança passiva para uma **Defesa Ativa** reduz drasticamente a janela de oportunidade de um atacante. Ao integrar a deteção em tempo real com a automação de firewall, o sistema conseguiu neutralizar ferramentas de reconhecimento e ataques de força bruta logo na primeira interação, cumprindo na íntegra os requisitos propostos para o Projeto Final.
 
