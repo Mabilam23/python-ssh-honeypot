@@ -1,35 +1,48 @@
-# python-ssh-honeypot
-Um honeypot leve em Python para detetar e registar varrimentos de rede simulando um servidor SSH.
-## Estado Atual do Projeto
-O motor base está totalmente funcional. O honeypot é capaz de escutar tráfego, identificar scanners, resistir a cortes abruptos de ligação e falsificar a versão do serviço para enganar o atacante.
+# Honeypot Multi-Superfície com Defesa Ativa
 
-### Fase 1: Implementação Base (Concluída)
-- [x] Criação de um servidor socket em Python a escutar na porta 22.
-- [x] Envio de banner falso (Spoofing) para enganar o Nmap (`SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.1`).
-- [x] Blindagem contra falhas (Try-Except) para lidar com erros de *Connection reset by peer* gerados por varrimentos agressivos.
-- [x] Criação de um sistema de registos local (`intrusoes.log`) com carimbo de tempo e IP do atacante.
-- [x] Testes de eficácia comprovados via localhost e ataques de rede externa.
+**Disciplina:** Projeto Final  
+**Autor:** Mabila Mateus  
+**Ano Letivo:** 2026/27
 
-### Fase 2: Automação e Expansão
-- [X] **Persistência:** Transformar o script num serviço do sistema Linux para arranque automático e invisível.
-- [ ] **Expansão Multi-Porta:** Adicionar monitorização simultânea para as portas 21 (FTP) e 80 (HTTP).
-- [ ] **Alertas em Tempo Real:** Integração de Webhooks para notificar ataques instantaneamente via Discord ou Telegram.
-- [ ] **Defesa Ativa:** Integração com a Firewall para banir os IPs detetados automaticamente.
-- [ ] **Terminal Interativo Falso:** Simular um terminal real para capturar os comandos que o atacante tenta executar após um falso login.
-- [ ] **Dashboard Visual:** Interface Web simples para visualizar as métricas dos ataques detetados.
 
-## Pré-requisitos do Sistema
-- Sistema Operativo: Ubuntu Linux 
-- Rede: Interface configurada em modo NAT ou Bridged para exposição externa.
-- Dependências Python: Python 3.x (bibliotecas nativas `socket`, `time`, `datetime`).
 
-## Como executar a versão atual
-No servidor Ubuntu, execute o seguinte comando para iniciar o honeypot em segundo plano:
-```bash
-sudo python3 honeypot.py & 
+## Objetivo do Projeto
+O objetivo deste Projeto Final foi desenvolver e implementar um **Honeypot de Defesa Ativa** em ambiente Linux (Ubuntu). Ao contrário de um honeypot tradicional que apenas regista intrusões de forma passiva, este sistema reage de forma autónoma a ameaças. 
 
-## Como Testar (Simulação de Ataque)
-A partir de uma máquina externa na mesma rede, execute um varrimento de versão agressivo:
+O script em Python simula três serviços vulneráveis comuns (FTP, SSH e HTTP) e, ao detetar qualquer interação não autorizada, alerta o administrador em tempo real via Discord e aciona automaticamente a firewall do sistema (Iptables) para banir o endereço IP do atacante permanentemente.
 
-nmap -sV -p 22 192.168.164.130[IP_DO_SERVIDOR_HONEYPOT]
+##  Arquitetura e Ambiente de Laboratório
+Para garantir o isolamento e a segurança dos testes, o projeto foi desenvolvido num ambiente de laboratório virtualizado utilizando o **VMware Workstation** com configuração de rede NAT.
+
+* **Máquina Vítima (Honeypot):** Ubuntu Linux
+  * Hospeda o script Python em background utilizando o `systemd`.
+  * Utiliza o `iptables` nativo para a aplicação das regras de bloqueio.
+* **Máquina Atacante:** Kali Linux
+  * Utilizada para simular varrimentos de reconhecimento (Nmap).
+  * Utilizada para simular ataques de Força Bruta / Dicionário (Hydra).
+
+## Funcionalidades Principais
+1. **Monitorização Multi-Porta:** Escuta em simultâneo nas portas 21 (FTP), 22 (SSH) e 80 (HTTP) sem bloqueios entre processos, utilizando a biblioteca `threading` do Python.
+2. **Engano de Reconhecimento:** Envio de banners forjados (ex: *vsFTPd 3.0.3*, *OpenSSH 8.2p1*, *Apache 2.4.41*) para enganar ferramentas de scanning como o Nmap.
+3. **Alertas em Tempo Real:** Integração com Webhooks do Discord, enviando notificações instantâneas com o IP do atacante, a porta alvejada e a ação tomada.
+4. **Defesa Ativa Autónoma:** Execução imediata de comandos Iptables (`iptables -A INPUT -s [IP] -j DROP`) via `subprocess`, mitigando ataques de força bruta no primeiro milissegundo.
+
+## Dificuldades Encontradas e Soluções
+Durante o desenvolvimento do projeto, surgiram alguns desafios técnicos que foram ultrapassados com sucesso:
+* **Transição de Comunicação:** Inicialmente considerou-se a API do Telegram para os alertas, mas optou-se pela transição para Webhooks do Discord devido à maior simplicidade de integração e menor latência na entrega das mensagens JSON.
+* **Bloqueio Inadvertido do Host:** Durante os testes de Defesa Ativa, o IP da máquina Host (Windows) foi bloqueado pela firewall, cortando o acesso. A solução passou por implementar uma VM isolada (Kali Linux) exclusivamente para ataques e a utilização do comando `sudo iptables -F` para libertar IPs banidos durante a fase de testes.
+* **Concorrência de Portas:** O script inicial parava na primeira ligação (SSH). Foi necessário redesenhar a arquitetura de software para incluir *Threads*, permitindo que cada serviço (FTP, SSH, HTTP) corresse de forma independente.
+
+## Como Testar
+Para simular a Defesa Ativa, deve-se utilizar a máquina Kali Linux:
+
+1. **Varrimento Inicial:** `nmap -sV -F [IP_DO_UBUNTU]`
+   * *Resultado:* O Nmap deteta os serviços falsos, o Honeypot regista a intrusão, envia o alerta para o Discord e bloqueia o IP.
+2. **Prova do Bloqueio:** Repetir `nmap -sV -F [IP_DO_UBUNTU]`
+   * *Resultado:* O Nmap falha e reporta todas as portas como "Filtered" (ignoradas pela firewall).
+3. **Ataque de Força Bruta:** `hydra -l admin -p 123456 ftp://[IP_DO_UBUNTU]`
+   * *Resultado:* O Hydra não consegue iniciar o ataque porque a ligação é terminada imediatamente pela firewall.
+
+## 🏁 Conclusão
+O projeto demonstrou com sucesso que a transição de uma postura de cibersegurança passiva para uma **Defesa Ativa** reduz drasticamente a janela de oportunidade de um atacante. Ao integrar a deteção em tempo real com a automação de firewall, o sistema conseguiu neutralizar ferramentas de reconhecimento e ataques de força bruta logo na primeira interação, cumprindo na íntegra os requisitos propostos para o Projeto Final.
 
